@@ -39,3 +39,5 @@ C:\Users\user\Desktop\New folder\Aaron Rework\Cryptographic\Cryptographic\obj\De
 C:\Users\user\Desktop\New folder\Aaron Rework\Cryptographic\Cryptographic\obj\Debug\Cryptographic.csproj.CopyComplete
 C:\Users\user\Desktop\New folder\Aaron Rework\Cryptographic\Cryptographic\obj\Debug\Cryptographic.exe
 C:\Users\user\Desktop\New folder\Aaron Rework\Cryptographic\Cryptographic\obj\Debug\Cryptographic.pdb
+C:\Users\user\Desktop\New folder\Aaron Rework\Cryptographic\Cryptographic\bin\Debug\Microsoft.IdentityModel.JsonWebTokens.pdb
+C:\Users\user\Desktop\New folder\Aaron Rework\Cryptographic\Cryptographic\bin\Debug\System.IdentityModel.Tokens.Jwt.pdb
