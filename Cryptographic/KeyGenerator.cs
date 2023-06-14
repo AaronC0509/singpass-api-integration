@@ -63,11 +63,12 @@ public class KeyGenerator
 
         var privateKeyInfo = new PrivateKeyInfo(
             new AlgorithmIdentifier(X9ObjectIdentifiers.IdECPublicKey, x9.ToAsn1Object()),
-            new Org.BouncyCastle.Asn1.Sec.ECPrivateKeyStructure((int)privateKeyParameters.Parameters.N.BitLength, privateKeyParameters.D, x9).ToAsn1Object());
+            new Org.BouncyCastle.Asn1.Sec.ECPrivateKeyStructure((int)privateKeyParameters.D.BitLength, privateKeyParameters.D, x9).ToAsn1Object());
 
         var serializedPrivateBytes = privateKeyInfo.GetDerEncoded();
 
         ECDsaCng ecdsa = new ECDsaCng(CngKey.Import(serializedPrivateBytes, CngKeyBlobFormat.Pkcs8PrivateBlob));
+
         return ecdsa;
     }
 
