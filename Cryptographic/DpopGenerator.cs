@@ -24,7 +24,16 @@ public class DpopGenerator
             Kid = "aQPyZ72NM043E4KEioaHWzixt0owV99gC9kRK388WoQ"
         };
 
-        var jwtHeader = new JwtHeader(new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(privateKey)), SecurityAlgorithms.HmacSha256));
+        // Convert the private key from PEM format to an ECDsa object
+        var ecdsa = KeyGenerator.ConvertPemToECDsa(privateKey);
+
+        // Create a security key from the ECDsa object
+        var securityKey = new ECDsaSecurityKey(ecdsa);
+
+        // Use the ECDsa security key to create the signing credentials with the ES256 algorithm
+        var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.EcdsaSha256);
+
+        var jwtHeader = new JwtHeader(signingCredentials);
 
         // Remove the existing "typ" key
         if (jwtHeader.ContainsKey("typ"))
@@ -37,13 +46,13 @@ public class DpopGenerator
         jwtHeader.Add("jwk", jwk);
 
         var jwtPayload = new JwtPayload
-        {
-            { "jti", jti },
-            { "htu", url },
-            { "htm", method },
-            { "iat", now },
-            { "exp", now + 120 }
-        };
+    {
+        { "jti", jti },
+        { "htu", url },
+        { "htm", method },
+        { "iat", now },
+        { "exp", now + 120 }
+    };
 
         var jwtSecurityToken = new JwtSecurityToken(jwtHeader, jwtPayload);
         var jwtHandler = new JwtSecurityTokenHandler();

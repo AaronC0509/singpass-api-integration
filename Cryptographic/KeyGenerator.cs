@@ -44,4 +44,26 @@ public class KeyGenerator
             return Base64UrlEncoder.Encode(hash);
         }
     }
+    public static ECDsaCng ConvertPemToECDsa(string pem)
+    {
+        TextReader textReader = new StringReader(pem);
+        PemReader pemReader = new PemReader(textReader);
+        AsymmetricCipherKeyPair keyPair = (AsymmetricCipherKeyPair)pemReader.ReadObject();
+        ECPrivateKeyParameters privateKeyParameters = (ECPrivateKeyParameters)keyPair.Private;
+        Org.BouncyCastle.Math.EC.ECPoint q = privateKeyParameters.Parameters.G.Multiply(privateKeyParameters.D);
+
+        ECDsaCng ecdsa = new ECDsaCng(CngKey.Import(
+            FromHex(privateKeyParameters.D.ToString(16)),
+            CngKeyBlobFormat.EccPrivateBlob));
+        return ecdsa;
+    }
+    private static byte[] FromHex(string hex)
+    {
+        byte[] raw = new byte[hex.Length / 2];
+        for (int i = 0; i < raw.Length; i++)
+        {
+            raw[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+        }
+        return raw;
+    }
 }
