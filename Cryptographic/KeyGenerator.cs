@@ -49,25 +49,17 @@ public class KeyGenerator
     }
     public static ECDsaCng ConvertPemToECDsa(string pem)
     {
+        Console.WriteLine("pem: " + pem);
         TextReader textReader = new StringReader(pem);
         PemReader pemReader = new PemReader(textReader);
         AsymmetricCipherKeyPair keyPair = (AsymmetricCipherKeyPair)pemReader.ReadObject();
-        ECPrivateKeyParameters privateKeyParameters = (ECPrivateKeyParameters)keyPair.Private;
+        var privateKeyParameters = (ECPrivateKeyParameters)keyPair.Private;
+        var q = privateKeyParameters.Parameters.G.Multiply(privateKeyParameters.D);
+        var publicKeyParameters = new ECPublicKeyParameters(q, privateKeyParameters.Parameters);
+        var bcEcdsa = new Org.BouncyCastle.Crypto.Signers.ECDsaSigner();
+        bcEcdsa.Init(false, publicKeyParameters);
 
-        var x9 = new X9ECParameters(
-            privateKeyParameters.Parameters.Curve,
-            new X9ECPoint(privateKeyParameters.Parameters.Curve, privateKeyParameters.Parameters.G.GetEncoded()),
-            privateKeyParameters.Parameters.N,
-            privateKeyParameters.Parameters.H,
-            privateKeyParameters.Parameters.GetSeed());
-
-        var privateKeyInfo = new PrivateKeyInfo(
-            new AlgorithmIdentifier(X9ObjectIdentifiers.IdECPublicKey, x9.ToAsn1Object()),
-            new Org.BouncyCastle.Asn1.Sec.ECPrivateKeyStructure((int)privateKeyParameters.D.BitLength, privateKeyParameters.D, x9).ToAsn1Object());
-
-        var serializedPrivateBytes = privateKeyInfo.GetDerEncoded();
-
-        ECDsaCng ecdsa = new ECDsaCng(CngKey.Import(serializedPrivateBytes, CngKeyBlobFormat.Pkcs8PrivateBlob));
+        var ecdsa = new ECDsaCng(CngKey.Import(bcEcdsa.Order.ToByteArrayUnsigned(), CngKeyBlobFormat.EccPrivateBlob));
 
         return ecdsa;
     }
