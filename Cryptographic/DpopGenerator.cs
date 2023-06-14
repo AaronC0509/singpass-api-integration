@@ -25,6 +25,7 @@ public class DpopGenerator
         };
 
         // Convert the private key from PEM format to an ECDsa object
+        Console.WriteLine("privateKey: " + privateKey);
         var ecdsa = KeyGenerator.ConvertPemToECDsa(privateKey);
 
         // Create a security key from the ECDsa object

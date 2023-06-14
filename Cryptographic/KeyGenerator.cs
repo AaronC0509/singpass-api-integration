@@ -54,12 +54,40 @@ public class KeyGenerator
         PemReader pemReader = new PemReader(textReader);
         AsymmetricCipherKeyPair keyPair = (AsymmetricCipherKeyPair)pemReader.ReadObject();
         var privateKeyParameters = (ECPrivateKeyParameters)keyPair.Private;
+        var d = privateKeyParameters.D.ToByteArrayUnsigned();
         var q = privateKeyParameters.Parameters.G.Multiply(privateKeyParameters.D);
-        var publicKeyParameters = new ECPublicKeyParameters(q, privateKeyParameters.Parameters);
-        var bcEcdsa = new Org.BouncyCastle.Crypto.Signers.ECDsaSigner();
-        bcEcdsa.Init(false, publicKeyParameters);
+        var x = q.Normalize().AffineXCoord.ToBigInteger().ToByteArrayUnsigned();
+        var y = q.Normalize().AffineYCoord.ToBigInteger().ToByteArrayUnsigned();
 
-        var ecdsa = new ECDsaCng(CngKey.Import(bcEcdsa.Order.ToByteArrayUnsigned(), CngKeyBlobFormat.EccPrivateBlob));
+        // Ensure the key parameters are the correct length, padding with zeros if necessary
+        if (x.Length < 32)
+        {
+            var temp = new byte[32];
+            Buffer.BlockCopy(x, 0, temp, 32 - x.Length, x.Length);
+            x = temp;
+        }
+        if (y.Length < 32)
+        {
+            var temp = new byte[32];
+            Buffer.BlockCopy(y, 0, temp, 32 - y.Length, y.Length);
+            y = temp;
+        }
+        if (d.Length < 32)
+        {
+            var temp = new byte[32];
+            Buffer.BlockCopy(d, 0, temp, 32 - d.Length, d.Length);
+            d = temp;
+        }
+
+        // Construct the BLOB
+        var blob = new byte[1 + 3 * 32];
+        blob[0] = 0x04; // Magic number for ECC public key
+        Buffer.BlockCopy(x, 0, blob, 1, 32);
+        Buffer.BlockCopy(y, 0, blob, 33, 32);
+        Buffer.BlockCopy(d, 0, blob, 65, 32);
+
+        // Import the BLOB into a CngKey
+        var ecdsa = new ECDsaCng(CngKey.Import(blob, CngKeyBlobFormat.EccPrivateBlob));
 
         return ecdsa;
     }
