@@ -80,11 +80,16 @@ public class KeyGenerator
         }
 
         // Construct the BLOB
-        var blob = new byte[1 + 3 * 32];
-        blob[0] = 0x04; // Magic number for ECC public key
-        Buffer.BlockCopy(x, 0, blob, 1, 32);
-        Buffer.BlockCopy(y, 0, blob, 33, 32);
-        Buffer.BlockCopy(d, 0, blob, 65, 32);
+        var blob = new byte[104];
+        blob[0] = 0x20; // Magic number for ECC private key
+        Buffer.BlockCopy(d, 0, blob, 4, 32);
+        Buffer.BlockCopy(x, 0, blob, 36, 32);
+        Buffer.BlockCopy(y, 0, blob, 68, 32);
+
+        Console.WriteLine("d: " + d.Length);
+        Console.WriteLine("x: " + x.Length);
+        Console.WriteLine("y: " + y.Length);
+        Console.WriteLine("blob: " + blob.Length);
 
         // Import the BLOB into a CngKey
         var ecdsa = new ECDsaCng(CngKey.Import(blob, CngKeyBlobFormat.EccPrivateBlob));
