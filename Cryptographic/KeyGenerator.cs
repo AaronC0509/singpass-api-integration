@@ -82,9 +82,11 @@ public class KeyGenerator
         // Construct the BLOB
         var blob = new byte[104];
         blob[0] = 0x20; // Magic number for ECC private key
-        Buffer.BlockCopy(d, 0, blob, 4, 32);
-        Buffer.BlockCopy(x, 0, blob, 36, 32);
-        Buffer.BlockCopy(y, 0, blob, 68, 32);
+        blob[1] = 0x20; // Key length
+        Buffer.BlockCopy(d, 0, blob, 8, 32); // Start copying at index 8 to leave space for cbKey
+        Buffer.BlockCopy(x, 0, blob, 40, 32);
+        Buffer.BlockCopy(y, 0, blob, 72, 32);
+
 
         Console.WriteLine("d: " + d.Length);
         Console.WriteLine("x: " + x.Length);
